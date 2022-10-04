@@ -17,7 +17,7 @@ for i in range(left, right):
     list_x.append(x)
     list_y.append(y)
     list_res.append(equation(x, y))
-    print(f'x = {x} | y = {y} | результат = {equation(x, y)}')
+    #print(f'x = {x} | y = {y} | результат = {equation(x, y)}')
 
 result = min(map(abs, list_res))
 id = list_res.index(result)
