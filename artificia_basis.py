@@ -1,10 +1,11 @@
 # Метод искуственного базиса
+from cmath import inf
 
 z = lambda M, x1, x2, x3, x4, x5, x6, x7: -x1 - 2*x2 + 3*x3 - 10*x4 - M*x5 - M*x6 - M*x7 # max ("-" перед M)
 
 def head():
-    print(f"I | Базис | Cб | A0 | {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} | {r[5]} | {r[6]} | ")
-    print(f"  |       |    |    | {a[0]} | {a[1]} | {a[2]} | {a[3]} | {a[4]} | {a[5]} | {a[6]} | ")
+    print(f"I | Базис | Cб | A0 | {eq[1][1]} | {eq[1][2]} | {eq[1][3]} | {eq[1][4]} | {eq[1][5]} | {eq[1][6]} | {eq[1][7]} | ")
+    print(f"  |       |    |    | {eq[0][1]} | {eq[0][2]} | {eq[0][3]} | {eq[0][4]} | {eq[0][5]} | {eq[0][6]} | {eq[0][7]} | ")
 
 def sign(var):
     if var.find('-') != -1: return -1
@@ -21,40 +22,97 @@ def dot(list1 = [], list2 = [], j = int):
         else: 
             z += list1[i] * list2[i]
 
-    if j <= len(r)-4: z -= r[j]
+    if j > 0 and j <= col: 
+        z -= eq[1][j]
+
     return z, c
 
 M = '-M'
-a = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7']
-r  = [1, -2, 3, -10, M, M, M]
-f  = [1, 1, 2, -6, 1, 0, 0, 1]
-s = [1, 1, 4, -8, 0, 1, 0, 1]
-t  = [4, 2, 1, -4, 0, 0, 1, 3]
+eq = [
+[None, 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'],
+[None, 2, -3, 6, 1, 0, 0, M], 
+[24, 2, 1, -2, 1, 0, 0, 0], 
+[22, 1, 2, 4, 0, 1, 0, 0], 
+[10, 1, -1, 2, 0, 0, -1, 1]]
 
-c = [r[4], r[5], r[6]]
+# длина массива с учетом 0 индекса
+row = len(eq) - 3
+col = len(eq[0]) - 1
+
+def is_one(list = []):
+    is_one = False
+    for i in range(len(list)):
+        if list[i] == 1:
+            if is_one == False: is_one = True
+            else:
+                return False
+        if list[i] != 0 and list[i] != 1: 
+            return False
+
+    if is_one == False: return False
+    return True
+
+def create_one():
+    mylist = []
+    for i in range(col):
+        if is_one([eq[2][i+1], eq[3][i+1], eq[4][i+1]]) == True: mylist.append(True)
+        else: mylist.append(False)
+        #print(eq[2][i+1], eq[3][i+1], eq[4][i+1])
+    mylist.insert(0, False)
+    return mylist
+
+c = [4,5,7]
+one = create_one()
 m1, m2 = [], []
+#print(one)
 
 def m1m2():
     m1.clear 
     m2.clear
 
-    for i in range(len(f)):
-        if i >= len(f)-4 and i <= len(f)-2:
+    for i in range(col+1):
+        if one[i] == True:
             m1.append(0)
             m2.append(0)
         else:
-            first, second = dot(c, [f[i], s[i], t[i]], i)
+            list1 = [eq[1][c[0]], eq[1][c[1]], eq[1][c[2]]]
+            list2 = [eq[2][i], eq[3][i], eq[4][i]]
+            #print(list1, list2)
+            first, second = dot(list1, list2, i)
             m1.append(first)
             m2.append(second)
 
-    print(f"4 |       |    | {m1[7]} | {m1[0]} | {m1[1]} | {m1[2]} | {m1[3]} | {m1[4]} | {m1[5]} | {m1[6]} | ")
-    print(f"5 |       |    | {m2[7]} | {m2[0]} | {m2[1]} | {m2[2]} | {m2[3]} | {m2[4]} | {m2[5]} | {m2[6]} | ")
+    print(f"4 |       |    | {m1[0]} | {m1[1]} | {m1[2]} | {m1[3]} | {m1[4]} | {m1[5]} | {m1[6]} | {m1[7]} | ")
+    print(f"5 |       |    | {m2[0]} | {m2[1]} | {m2[2]} | {m2[3]} | {m2[4]} | {m2[5]} | {m2[6]} | {m2[7]} | ")
+
+    list_less = []
+    for i in range(col):
+        if m2[i] < 0 and i != 0: list_less.append(m2[i])
+    index_j = m2.index(min(list_less))
+
+    choice_list = []
+    for i in range(row+1):
+        if eq[i+2][index_j] >= 0: 
+            choice_list.append(eq[i+2][0]/eq[i+2][index_j])
+        else: choice_list.append(inf)
+    #print(choice_list)
+
+    index_i = choice_list.index(min(choice_list)) + 2
+    main = eq[index_i][index_j]
+    #print(f'eq[{index_i}][{index_j}] = {main}')
+
+    for j in range(col):
+        #print(eq[index_i][j], '/', main, '=', eq[index_i][j]/main)
+        eq[index_i][j] = eq[index_i][j]/main
+
+
 
 head()
-
-print(f"1 |   {a[4]}  | {r[4]} | {f[7]} | {f[0]} | {f[1]} | {f[2]} | {f[3]} | {f[4]} | {f[5]} | {f[6]} | ")
-print(f"2 |   {a[5]}  | {r[5]} | {s[7]} | {s[0]} | {s[1]} | {s[2]} | {s[3]} | {s[4]} | {s[5]} | {s[6]} | ")
-print(f"3 |   {a[6]}  | {r[6]} | {t[7]} | {t[0]} | {t[1]} | {t[2]} | {t[3]} | {t[4]} | {t[5]} | {t[6]} | ")
+print(f"1 |   {eq[0][c[0]]}  | {eq[1][c[0]]} | {eq[2][0]} | {eq[2][1]} | {eq[2][2]} | {eq[2][3]} | {eq[2][4]} | {eq[2][5]} | {eq[2][6]} | {eq[2][7]} | ")
+print(f"2 |   {eq[0][c[1]]}  | {eq[1][c[1]]} | {eq[3][0]} | {eq[3][1]} | {eq[3][2]} | {eq[3][3]} | {eq[3][4]} | {eq[3][5]} | {eq[3][6]} | {eq[3][7]} | ")
+print(f"3 |   {eq[0][c[2]]}  | {eq[1][c[2]]} | {eq[4][0]} | {eq[4][1]} | {eq[4][2]} | {eq[4][3]} | {eq[4][4]} | {eq[4][5]} | {eq[4][6]} | {eq[4][7]} | ")
 m1m2()
 
 
+#if is_one([0, 0, 1, 2]): print('Good')
+#else: print('Bad')
