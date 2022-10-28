@@ -1,5 +1,6 @@
 # Метод искуственного базиса
 from cmath import inf
+from prettytable import PrettyTable
 
 M = '-M'
 eq = [
@@ -9,21 +10,61 @@ eq = [
 [22, 1, 2, 4, 0, 1, 0, 0], 
 [10, 1, -1, 2, 0, 0, -1, 1]]
 
-# длина массива с учетом 0 индекса
-row = len(eq) - 3
+# Объявляем переменную таблицы
+t = PrettyTable()
+
+# Длина массива
+row = len(eq) - 2
 col = len(eq[0]) - 1
 
-c = [4,5,7]
+# Метод на построение списка True False. True - единичный вектор 
+def create_one():
+    mylist = []
+    for j in range(1, col+1):
+        if is_one([eq[2][j], eq[3][j], eq[4][j]]): mylist.append(True)
+        else: mylist.append(False)
+    mylist.insert(0, False)
+    return mylist
 
-def head():
-    print(f"I | Базис | Cб | A0 | {eq[1][1]} | {eq[1][2]} | {eq[1][3]} | {eq[1][4]} | {eq[1][5]} | {eq[1][6]} | {eq[1][7]} | ")
-    print(f"  |       |    |    | {eq[0][1]} | {eq[0][2]} | {eq[0][3]} | {eq[0][4]} | {eq[0][5]} | {eq[0][6]} | {eq[0][7]} | ")
+# Метод на проверку единичного вектора
+def is_one(list = []):
+    is_one = False
+    for i in range(len(list)):
+        if list[i] == 1:
+            if not is_one: 
+                is_one = True
+            else:
+                return False
+        if list[i] != 0 and list[i] != 1: 
+            return False
 
+    if not is_one: return False
+    return True
+
+# Метод для первоначального построения списка базисов
+def build_c():
+    list_c = []
+    one = create_one()
+
+    for i in range(1, col+1):
+        if one[i]: list_c.append(i)
+    
+    if len(list_c) != row: 
+        print(f'В задаче должно быть {row} единичных вектора!')
+        exit()
+
+    return list_c
+
+# Строим базис
+c = build_c()
+
+# Метод для проверки строки на знак
 def sign(var):
     if var.find('-') != -1: return -1
     else: return 1
 
-def dot(list1 = [], list2 = [], j = int):
+# Метод для перемножения строки и числа
+def dot(list1 = [], list2 = [], j = None):
     z, c = 0, 0
     for i in range(len(list1)):
         if type(list1[i]) == str or type(list2[i]) == str:
@@ -39,28 +80,7 @@ def dot(list1 = [], list2 = [], j = int):
 
     return z, c
 
-def is_one(list = []):
-    is_one = False
-    for i in range(len(list)):
-        if list[i] == 1:
-            if is_one == False: is_one = True
-            else:
-                return False
-        if list[i] != 0 and list[i] != 1: 
-            return False
-
-    if is_one == False: return False
-    return True
-
-def create_one():
-    mylist = []
-    for i in range(col):
-        if is_one([eq[2][i+1], eq[3][i+1], eq[4][i+1]]) == True: mylist.append(True)
-        else: mylist.append(False)
-        #print(eq[2][i+1], eq[3][i+1], eq[4][i+1])
-    mylist.insert(0, False)
-    return mylist
-
+# Метод для расчета m1 и m2
 def m1m2():
     m1, m2 = [], []
     one = create_one()
@@ -72,89 +92,92 @@ def m1m2():
         else:
             list1 = [eq[1][c[0]], eq[1][c[1]], eq[1][c[2]]]
             list2 = [eq[2][i], eq[3][i], eq[4][i]]
-            #print(list1, list2)
             first, second = dot(list1, list2, i)
             m1.append(first)
             m2.append(second)
 
+    # Условия для проверки строк m1 и m2 (4 и 5)
     res_m2 = all(x == 0 for x in m2) # все значения == 0
     res_m1 = all(x >= 0 for x in m1) # все значения >= 0
-    #print(res_m1, res_m2)
 
-    print(f"4 |       |    | {m1[0]} | {m1[1]} | {m1[2]} | {m1[3]} | {m1[4]} | {m1[5]} | {m1[6]} | {m1[7]} | ")
-    #print(f"5 |       |    | {m2[0]} | {m2[1]} | {m2[2]} | {m2[3]} | {m2[4]} | {m2[5]} | {m2[6]} | {m2[7]} | ")
+    # В любом случае добавляем строку m1 (4)
+    t.add_row(['4', '', '', m1[0], m1[1], m1[2], m1[3], m1[4], m1[5], m1[6], m1[7]])
 
-    if res_m1 and res_m2: 
-        print('Опорный план является оптимальным')
+    # Опорный план задачи найден
+    if res_m1 and res_m2:
+        print(t, '\nОпорный план является оптимальным')
         return False
+    # Перестаем считать по строке m2 (5)    
     elif res_m2 == True:
+        print(t, '\nСтрока m2 содержит все нулевые значения')
         calc_table(m1)
         return True
+    # Продолжаем считать по строке m2 (5)   
     else: 
-        print(f"5 |       |    | {m2[0]} | {m2[1]} | {m2[2]} | {m2[3]} | {m2[4]} | {m2[5]} | {m2[6]} | {m2[7]} | ")
+        t.add_row(['5', '', '', m2[0], m2[1], m2[2], m2[3], m2[4], m2[5], m2[6], m2[7]])
+        print(t)
         calc_table(m2)
         return True
 
+# Метод для обновления значений таблицы по результатам m1 или m2
 def calc_table(m = []):
     # Определение решающего значение и его индексов
     list_less = []
     for i in range(col):
         if m[i] < 0 and i != 0: list_less.append(m[i])
 
-    if list_less == []: 
-        print('Опорный план является оптимальным')
+    # Если не найдено минимального значения в m2
+    if list_less == []:
+        if m[0] < 0: print('Исходная задача не имеет решения (A0 < 0)')
+        elif m[0] == 0: print('Опорный план задачи вырожден (A0 = 0)')
         exit(0)
 
+    # Находим минимальное значение в m1 или m2
     index_j = m.index(min(list_less))
 
     choice_list = []
-    for i in range(row+1):
+    for i in range(row):
         if eq[i+2][index_j] >= 0: 
             choice_list.append(eq[i+2][0]/eq[i+2][index_j])
         else: choice_list.append(inf)
-    #print(choice_list)
 
     index_i = choice_list.index(min(choice_list)) + 2
     main = eq[index_i][index_j]
-    #print(f'eq[{index_i}][{index_j}] = {main}')
-    #print(f'x/x: {min(choice_list)} main: {main}')
 
     # Сохраняем измененную главную линию по x и y
     save_y = []
     save_x = [x / main for x in eq[index_i]]
-    for i in range(row+1): save_y.append(eq[i+2][index_j])
-    #print(save_x, save_y)
+    for i in range(row): save_y.append(eq[i+2][index_j])
 
     # Расчёт таблицы
-    for i in range(row+1):
+    for i in range(row):
         for j in range(col+1):
-            #print(i+2, index_i)
             if i+2 == index_i: 
                 # Изменяем значения в главной линии
-                #print(eq[index_i][j], '/', main, '=', save_list[j])
                 eq[index_i][j] = save_x[j]
             else:
                 # Изменяем значения в остальных линиях
-                #print(f'{i+2}. {eq[i+2][j]} - {save_x[j]} * {save_y[i]} = {eq[i+2][j] - save_x[j] * save_y[i]}')
                 eq[i+2][j] = eq[i+2][j] - save_x[j] * save_y[i]
 
-    # Изменение базисного значения
+    # Убираем искусственный базис
     if eq[1][c[index_i-2]] == M: 
-        for i in range(len(eq)):
+        print(f"Искусственный базис {eq[0][c[index_i-2]]} убран")
+        for i in range(1, len(eq)):
             eq[i][c[index_i-2]] = 0
-    c[index_i-2] = index_j
         
-def print_table():
-    print(f"1 |   {eq[0][c[0]]}  | {eq[1][c[0]]} | {eq[2][0]} | {eq[2][1]} | {eq[2][2]} | {eq[2][3]} | {eq[2][4]} | {eq[2][5]} | {eq[2][6]} | {eq[2][7]} | ")
-    print(f"2 |   {eq[0][c[1]]}  | {eq[1][c[1]]} | {eq[3][0]} | {eq[3][1]} | {eq[3][2]} | {eq[3][3]} | {eq[3][4]} | {eq[3][5]} | {eq[3][6]} | {eq[3][7]} | ")
-    print(f"3 |   {eq[0][c[2]]}  | {eq[1][c[2]]} | {eq[4][0]} | {eq[4][1]} | {eq[4][2]} | {eq[4][3]} | {eq[4][4]} | {eq[4][5]} | {eq[4][6]} | {eq[4][7]} | ")
+    # Изменение базисного значения
+    c[index_i-2] = index_j
 
-def start():
-    head()
-    while True:
-        print_table()
-        if m1m2() == False: break
+# Метод для построения таблицы
+def table_build():
+    t.clear()
+    t.field_names = ['I', 'Базис', 'Сб', 'A0', eq[0][1], eq[0][2], eq[0][3], eq[0][4], eq[0][5], eq[0][6], eq[0][7]]
+    t.add_row(['', '', '', '', eq[1][1], eq[1][2], eq[1][3], eq[1][4], eq[1][5], eq[1][6], eq[1][7]])
 
-start()
+    for i in range(3):
+        t.add_row([i+1, eq[0][c[i]], eq[1][c[i]], eq[i+2][0], eq[i+2][1], eq[i+2][2], eq[i+2][3], eq[i+2][4], eq[i+2][5], eq[i+2][6], eq[i+2][7]])
 
-
+# Запускаем код 
+while True:
+    table_build()
+    if m1m2() == False: break
