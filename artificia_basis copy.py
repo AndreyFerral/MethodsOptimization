@@ -4,11 +4,11 @@ from prettytable import PrettyTable
 
 M = '-M'
 eq = [
-[None, 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'],
-[None, 2, -3, 6, 1, 0, 0, M], 
-[24, 2, 1, -2, 1, 0, 0, 0], 
-[22, 1, 2, 4, 0, 1, 0, 0], 
-[10, 1, -1, 2, 0, 0, -1, 1]]
+[None, 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8'],
+[None, -3, -5, 0, 0, 0, '-M', '-M', '-M'], 
+[10, 2, 1, -1, 0, 0, 1, 0, 0], 
+[5, 1, 3, 0, -1, 0, 0, 1, 0], 
+[9, 3, 10, 0, 0, -1, 0, 0, 1]]
 
 # Объявляем переменную таблицы
 t = PrettyTable()
@@ -177,21 +177,7 @@ def table_build():
     for i in range(3):
         t.add_row([i+1, eq[0][c[i]], eq[1][c[i]], eq[i+2][0], eq[i+2][1], eq[i+2][2], eq[i+2][3], eq[i+2][4], eq[i+2][5], eq[i+2][6], eq[i+2][7]])
 
-def is_good(numb):
-    for i in range(len(c)):
-        if c[i] == numb: return True
-    return False
-
-def get_result():
-    res = []
-    for i in range(1, col + 1):
-        if is_good(i): res.append(eq[1][i])
-        else: res.append(eq[1][0])
-    return res
-         
 # Запускаем код 
 while True:
     table_build()
     if m1m2() == False: break
-# Выводим результат
-print(get_result())
