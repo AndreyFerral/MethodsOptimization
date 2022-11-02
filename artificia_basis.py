@@ -16,8 +16,9 @@ t = PrettyTable()
 # Длина массива
 row = len(eq) - 2
 col = len(eq[0]) - 1
+removed = 0
 
-# Метод на построение списка True False. True - единичный вектор 
+# Метод проверки единичных векторов. Список True - False
 def create_one():
     mylist = []
     for j in range(1, col+1):
@@ -105,7 +106,8 @@ def m1m2():
 
     # Опорный план задачи найден
     if res_m1 and res_m2:
-        print(t, '\nОпорный план является оптимальным')
+        print(t, f'\nОпорный план является оптимальным. F = {m1[0]}')
+        print(f'X* = {get_result()}')
         return False
     # Перестаем считать по строке m2 (5)    
     elif res_m2 == True:
@@ -126,7 +128,7 @@ def calc_table(m = []):
     for i in range(col):
         if m[i] < 0 and i != 0: list_less.append(m[i])
 
-    # Если не найдено минимального значения в m2
+    # Если в списке нет отрицательных значений
     if list_less == []:
         if m[0] < 0: print('Исходная задача не имеет решения (A0 < 0)')
         elif m[0] == 0: print('Опорный план задачи вырожден (A0 = 0)')
@@ -161,10 +163,12 @@ def calc_table(m = []):
 
     # Убираем искусственный базис
     if eq[1][c[index_i-2]] == M: 
+        global removed
+        removed += 1
         print(f"Искусственный базис {eq[0][c[index_i-2]]} убран")
         for i in range(1, len(eq)):
             eq[i][c[index_i-2]] = 0
-        
+
     # Изменение базисного значения
     c[index_i-2] = index_j
 
@@ -177,21 +181,15 @@ def table_build():
     for i in range(3):
         t.add_row([i+1, eq[0][c[i]], eq[1][c[i]], eq[i+2][0], eq[i+2][1], eq[i+2][2], eq[i+2][3], eq[i+2][4], eq[i+2][5], eq[i+2][6], eq[i+2][7]])
 
-def is_good(numb):
-    for i in range(len(c)):
-        if c[i] == numb: return True
-    return False
-
+# Метод для построения опорного плана
 def get_result():
-    res = []
-    for i in range(1, col + 1):
-        if is_good(i): res.append(eq[1][i])
-        else: res.append(eq[1][0])
-    return res
+    wo_removed = col - removed
+    result = [0] * wo_removed
+    for i in range(len(c)):
+        result[c[i]-1] = eq[i+2][0]
+    return result
          
 # Запускаем код 
 while True:
     table_build()
     if m1m2() == False: break
-# Выводим результат
-print(get_result())
