@@ -3,10 +3,17 @@ import copy
 from prettytable import PrettyTable
 
 # Исходные данные задачи
-
+'''
 eq = [
     [7, 12, 4, 8, 5, 180],
     [1, 8, 6, 5, 3, 350],
+    [6, 13, 8, 7, 4, 20],
+    [110, 90, 120, 80, 150, 550]
+]
+'''
+eq = [
+    [7, 12, 4, 8, 5, 180],
+    [2, 9, 7, 6, 4, 350],
     [6, 13, 8, 7, 4, 20],
     [110, 90, 120, 80, 150, 550]
 ]
@@ -88,11 +95,51 @@ def calculate_lines():
 
     # Получаем очередность перемещения товара
     order = get_order(plan)
+    # Распределяем груз по точкам
+    for i in range(len(order)):
+        m = order[i][0]
+        n = order[i][1]
+        # Если больше нет потребности или запаса
+        if reserves[m] == 0 or needs[n] == 0: return
+        # Если запаса больше потребностей
+        elif reserves[m] >= needs[n]:
+            plan[m][n] = needs[n]
+            reserves[m] = reserves[m] - needs[n]
+            needs[n] = 0
+        # Если потребностей больше запаса
+        else:
+            plan[m][n] = reserves[m]
+            needs[n] = needs[n] - reserves[m]
+            reserves[m] = 0
+
+    print(needs, reserves)
+
+    # Составляем избыточную/недостаточную строку
+    line_right = [''] * row
+    # Добавляем избыточные строки 
+    for i in range(len(reserves)):
+        if reserves[i] != 0: 
+            line_right[i] = f'+{reserves[i]}'
+    # Добавляем недостаточные строки 
+    for i in range(len(needs)):
+        if needs[i] != 0: 
+            index = line_right.index('')
+            line_right[index] = f'-{needs[i]}'
+    # Добавляем нулевые строки
+    for i in range(len(line_right)-1):
+        if line_right[i] == '':
+            print('i', i)
+            for j in range(len(plan[i])):
+                print (plan[j][i])
+                #if order[j][1] == i:
+
+    # Составляем строку разности
+    
+    line_down = [''] * (col + 1)
+
+    print(line_down, line_right)
 
     # todo Распределить грузы по точкам 
-
-    print(get_order(plan))
-
     return plan
 
 def get_order(plan):
