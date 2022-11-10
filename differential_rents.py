@@ -70,7 +70,7 @@ def build_table():
     table.add_row(line_down)
     return table
 
-def calculate_lines():
+def calculate_plan(needs, reserves):
     # Подготавливаем матрицу для плана
     plan = [[0]*(col-1) for i in range(row-1)]
 
@@ -85,13 +85,6 @@ def calculate_lines():
         for i in range(row-1): 
             if eq[i][j] == number_min: 
                 plan[i][j] = number_min
-
-    # Формируем строки потребностей и запасов
-    needs, reserves = [], []
-    for i in range(col-1):
-        needs.append(eq[-1][i])
-        if i < row-1: reserves.append(eq[i][-1])
-    print(needs, reserves)
 
     # Получаем очередность перемещения товара
     order = get_order(plan)
@@ -112,34 +105,62 @@ def calculate_lines():
             needs[n] = needs[n] - reserves[m]
             reserves[m] = 0
 
-    print(needs, reserves)
+    return plan, needs, reserves
+
+def get_volume(plan):
+    result = 0
+    for i in range(len(plan)):
+        for j in range (len(plan[i])):
+            result += plan[i][j]
+    return result
+
+def calculate_lines():
+    # Формируем строки потребностей и запасов
+    needs, reserves = [], []
+    for i in range(col-1):
+        needs.append(eq[-1][i])
+        if i < row-1: 
+            reserves.append(eq[i][-1])
+    # Запоминаем текущие значения потребностей и запасов
+    needs_copy = copy.deepcopy(needs)
+    reserves_copy = copy.deepcopy(reserves)
+    # Получаем обновленные значения
+    plan, needs, reserves = calculate_plan(needs, reserves)
 
     # Составляем избыточную/недостаточную строку
     line_right = [''] * row
-    # Добавляем избыточные строки 
+    # Определяем избыточные строки 
     for i in range(len(reserves)):
         if reserves[i] != 0: 
             line_right[i] = f'+{reserves[i]}'
-    # Добавляем недостаточные строки 
+    # Определяем недостаточные строки 
     for i in range(len(needs)):
         if needs[i] != 0: 
             index = line_right.index('')
             line_right[index] = f'-{needs[i]}'
-    # Добавляем нулевые строки
+    # Определяем нулевые строки с знаком
     for i in range(len(line_right)-1):
         if line_right[i] == '':
-            print('i', i)
-            for j in range(len(plan[i])):
-                print (plan[j][i])
-                #if order[j][1] == i:
+            needs_temp = copy.deepcopy(needs_copy)
+            reserves_temp = copy.deepcopy(reserves_copy)
+            # Прибавляем к поставкам 1, где стоит 0
+            reserves_temp[i] += 1
+            # Рассчитываем новый план и сумму планов
+            plan_temp = calculate_plan(needs_temp, reserves_temp)[0]
+            sum_plan = get_volume(plan)
+            sum_plan_temp = get_volume(plan_temp)
+
+            # Если суммарный объем поставок не изменился
+            if sum_plan == sum_plan_temp: 
+                line_right[i] = '+0'
+            # Если суммарный объем поставок изменился
+            else:
+                line_right[i] = '-0' 
 
     # Составляем строку разности
-    
     line_down = [''] * (col + 1)
 
-    print(line_down, line_right)
-
-    # todo Распределить грузы по точкам 
+    print('5', line_down, line_right)
     return plan
 
 def get_order(plan):
@@ -196,7 +217,5 @@ def add_lines(headers):
     return line_down, line_right
 
 print(build_table())
-print(row, col)
-print(build_headers())
-print(add_lines(build_headers()))
+print('row', row, '| col',col)
 print(calculate_lines())
