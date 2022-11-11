@@ -3,28 +3,13 @@ import copy
 from prettytable import PrettyTable
 
 # Исходные данные задачи
-'''
 eq = [
     [7, 12, 4, 8, 5, 180],
     [1, 8, 6, 5, 3, 350],
     [6, 13, 8, 7, 4, 20],
     [110, 90, 120, 80, 150, 550]
 ]
-'''
-eq = [
-    [7, 12, 4, 8, 5, 180],
-    [2, 9, 7, 6, 4, 350],
-    [6, 13, 8, 7, 4, 20],
-    [110, 90, 120, 80, 150, 550]
-]
-'''
-eq = [
-    [7, 12, 4, 8, 5, 180],
-    [3, 10, 8, 7, 5, 350],
-    [7, 14, 9, 8, 5, 20],
-    [110, 90, 120, 80, 150, 550]
-]
-'''
+
 # Количество строк и столбцов
 row = len(eq)
 col = len(eq[0])
@@ -52,7 +37,8 @@ def build_table():
     headers = build_headers()
     table = PrettyTable(headers[0])
     # Определяем нижниюю и правую линию
-    line_down, line_right = add_lines(headers)
+    plan, line_down, line_right = calculate_lines()
+    line_down.insert(0, headers[1][-1])
 
     # Добавляем строки в таблицу для отображения
     for i in range(row):
@@ -68,12 +54,23 @@ def build_table():
 
     # Добавляем для вывода нижнюю линию
     table.add_row(line_down)
-    return table
+
+    # Переходим к следующей итерации
+    isWork = False
+    for i in range(row-1):
+        if line_right[i] != '+0':
+            isWork = True
+            next_eq(line_down, line_right)
+            break
+    # Необходимо ли продолжать программу
+    if not isWork: 
+        return table, plan
+    else:
+        return table, None
 
 def calculate_plan(needs, reserves):
     # Подготавливаем матрицу для плана
     plan = [[0]*(col-1) for i in range(row-1)]
-
     # Заполняем план мин элементами
     for j in range(col-1):
         # Составляем список для поиска мин элемента
@@ -93,7 +90,8 @@ def calculate_plan(needs, reserves):
         m = order[i][0]
         n = order[i][1]
         # Если больше нет потребности или запаса
-        if reserves[m] == 0 or needs[n] == 0: return
+        if reserves[m] == 0 or needs[n] == 0: 
+            continue
         # Если запаса больше потребностей
         elif reserves[m] >= needs[n]:
             plan[m][n] = needs[n]
@@ -104,7 +102,7 @@ def calculate_plan(needs, reserves):
             plan[m][n] = reserves[m]
             needs[n] = needs[n] - reserves[m]
             reserves[m] = 0
-
+ 
     return plan, needs, reserves
 
 def get_volume(plan):
@@ -159,9 +157,27 @@ def calculate_lines():
 
     # Составляем строку разности
     line_down = [''] * (col + 1)
+    # Определяем числа в рамках 
+    for i in range(row-1):
+        for j in range(col-1): 
+            if plan[i][j] != 0:
+                # Если строка положительная 
+                if line_right[i].find('+') != -1:
+                    line_down[j] = '-'
+                # Иначе надо найти минимальный тариф
+                else: 
+                    list_less = []
+                    # Добавляем в список тарифы в положительных строках
+                    for m in range(row-1):
+                        if line_right[m].find('+') != -1:
+                            list_less.append(eq[m][j])
+                    # Вычисляем минимальный тариф
+                    number_min = min(list_less)
+                    # Рассчитываем разность
+                    difference = number_min-eq[i][j]
+                    line_down[j] = f'{difference}'
 
-    print('5', line_down, line_right)
-    return plan
+    return plan, line_down, line_right
 
 def get_order(plan):
     order_support = copy.deepcopy(plan)
@@ -202,20 +218,59 @@ def is_suitable(order_support, i, j):
     # Возвращаем true, если есть одно заполнения
     return check_row or check_col
 
-def add_lines(headers):
-    # Составляем пустые списки
-    line_down = [''] * (col + 1)
-    line_right = [''] * row
+def next_eq(line_down, line_right):
+    # Поиск минимальной разности
+    list_less = []
+    for i in range(len(line_down)):
+        if line_down[i].isdigit(): 
+            list_less.append(line_down[i])
+    difference_min = min(list_less)
+    # Изменяем значения в отрицательных строках
+    for i in range(row-1):
+        for j in range(col-1):
+            if line_right[i].find('-') != -1:
+                eq[i][j] += int(difference_min)
 
-    # Наполняем списки значениями
-    for i in range(col - 1):
-        line_down[i] = 0
-        if i < row - 1: line_right[i] = 0
+def start_method():
+    # Проверяем задачу на положительные элементы
+    try:
+        positive_eq_list = [all(x >= 0 for x in part) for part in eq]
+        positive_eq = all(x for x in positive_eq_list)
+    except:
+        print('Задача должна состоять из чисел')
+        return
+    # Рассчитываем объем запасов и потребностей
+    need, reserve = 0, 0
+    for i in range(col-1):
+        need += eq[-1][i]
+        if i < row-1: 
+            reserve += eq[i][-1]
+    # Проверяем задачу на корректность
+    summary = eq[-1][-1]
+    if not positive_eq:
+        print('Задача должна состоять из положительных элементов')
+        return
+    elif need != reserve:
+        print('Объем запасов не совпадает с объемом потребностей')
+        return
+    elif need != summary or reserve != summary:
+        print('Объем запасов/потребностей не совпадает с общим значением')
+        return
+    # Если проходит все условия
+    eq_copy = copy.deepcopy(eq)
+    while True:
+        table, plan = build_table()
+        if not plan:
+            print(table)
+        else: 
+            total_costs = 0
+            for i in range(row-1):
+                for j in range(col-1):
+                    if plan[i][j] != 0:
+                        total_costs += eq_copy[i][j] * plan[i][j]
+            print(table)
+            print('Оптимальный план:', plan)
+            print('Общие затрары:', total_costs)
+            break
 
-    # Добавляем заголовок в нижний список
-    line_down.insert(0, headers[1][-1])
-    return line_down, line_right
-
-print(build_table())
-print('row', row, '| col',col)
-print(calculate_lines())
+start_method()
