@@ -17,6 +17,7 @@ t = PrettyTable()
 row = len(eq) - 2
 col = len(eq[0]) - 1
 removed = 0
+print('row', row , '| col', col)
 
 # Метод проверки единичных векторов. Список True - False
 def create_one():
@@ -48,7 +49,8 @@ def build_c():
     one = create_one()
 
     for i in range(1, col+1):
-        if one[i]: list_c.append(i)
+        if one[i]: 
+            list_c.append(i)
     
     if len(list_c) != row: 
         print(f'В задаче должно быть {row} единичных вектора!')
@@ -172,15 +174,30 @@ def calc_table(m = []):
     # Изменение базисного значения
     c[index_i-2] = index_j
 
+def get_vectors_name():
+    vectors_name = []
+    for i in range(1, col+1):
+        vectors_name.append(f'P{i}')
+    return vectors_name
+
 # Метод для построения таблицы
 def table_build():
     t.clear()
-    t.field_names = ['I', 'Базис', 'Сб', 'A0', eq[0][1], eq[0][2], eq[0][3], eq[0][4], eq[0][5], eq[0][6], eq[0][7]]
-    t.add_row(['', '', '', '', eq[1][1], eq[1][2], eq[1][3], eq[1][4], eq[1][5], eq[1][6], eq[1][7]])
-
-    for i in range(3):
-        t.add_row([i+1, eq[0][c[i]], eq[1][c[i]], eq[i+2][0], eq[i+2][1], eq[i+2][2], eq[i+2][3], eq[i+2][4], eq[i+2][5], eq[i+2][6], eq[i+2][7]])
-
+    # Формируем заголовки для таблицы
+    header_first = ['I', 'Базис', 'Сб', 'A0'] + get_vectors_name()
+    header_second = ['', '', '', '']
+    for i in range(1, col+1):
+        header_second.append(eq[1][i])
+    # Добавляем заголовки в таблицу
+    t.field_names = header_first
+    t.add_row(header_second)
+    # Формируем строчки в таблице (до m1)
+    for i in range(row):
+        current_row = [i+1, eq[0][c[i]], eq[1][c[i]]]
+        for j in range(col+1):
+            current_row.append(eq[i+2][j])
+        t.add_row(current_row)
+    
 # Метод для построения опорного плана
 def get_result():
     wo_removed = col - removed
