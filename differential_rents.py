@@ -38,7 +38,6 @@ def build_table():
     table = PrettyTable(headers[0])
     # Определяем нижниюю и правую линию
     plan, line_down, line_right = calculate_lines()
-    line_down.insert(0, headers[1][-1])
 
     # Добавляем строки в таблицу для отображения
     for i in range(row):
@@ -52,13 +51,16 @@ def build_table():
         current_row.append(line_right[i])
         table.add_row(current_row)
 
-    # Добавляем для вывода нижнюю линию
-    table.add_row(line_down)
+    # Выводим нижнюю линию, если она не пустая
+    is_empty = all(x == '' for x in line_down)
+    if not is_empty:
+        line_down.insert(0, headers[1][-1]) 
+        table.add_row(line_down)
 
     # Переходим к следующей итерации
     isWork = False
     for i in range(row-1):
-        if line_right[i] != '+0':
+        if line_right[i] != '0':
             isWork = True
             next_eq(line_down, line_right)
             break
@@ -69,22 +71,11 @@ def build_table():
         return table, None
 
 def calculate_plan(needs, reserves):
+    # Получаем очередность перемещения товара
+    order = get_order()
     # Подготавливаем матрицу для плана
     plan = [[0]*(col-1) for i in range(row-1)]
-    # Заполняем план мин элементами
-    for j in range(col-1):
-        # Составляем список для поиска мин элемента
-        list_less = []
-        for i in range(row-1): 
-            list_less.append(eq[i][j])
-        # Добавляем мин элемент в опорный план
-        number_min = min(list_less)
-        for i in range(row-1): 
-            if eq[i][j] == number_min: 
-                plan[i][j] = number_min
 
-    # Получаем очередность перемещения товара
-    order = get_order(plan)
     # Распределяем груз по точкам
     for i in range(len(order)):
         m = order[i][0]
@@ -111,6 +102,18 @@ def get_volume(plan):
         for j in range (len(plan[i])):
             result += plan[i][j]
     return result
+
+def check_line_right(line_right):
+    # Проверяем line_right на наличие +0 -0
+    list_check = []
+    for i in range(row-1):
+        if line_right[i] == '-0' or line_right[i] == '+0':
+            list_check.append(True)
+        else: 
+           list_check.append(False) 
+    # Если все элементы +0 -0
+    is_all_zero = all(x for x in list_check)
+    return is_all_zero
 
 def calculate_lines():
     # Формируем строки потребностей и запасов
@@ -157,6 +160,11 @@ def calculate_lines():
 
     # Составляем строку разности
     line_down = [''] * (col + 1)
+    # Если все значения будут равны +0 или -0
+    if check_line_right(line_right):
+        line_right = ['0'] * row
+        return plan, line_down, line_right
+
     # Определяем числа в рамках 
     for i in range(row-1):
         for j in range(col-1): 
@@ -179,12 +187,22 @@ def calculate_lines():
 
     return plan, line_down, line_right
 
-def get_order(plan):
-    order_support = copy.deepcopy(plan)
-    order = []
-    # 0 - пустые элементы
-    # -1 - замена чисел с одним заполнением
+def get_order():
+    # Подготавливаем матрицу для определения очередности
+    order_support = [[0]*(col-1) for i in range(row-1)]
+    # Заполняем матрицу минимальными элементами
+    for j in range(col-1):
+        # Составляем список для поиска мин элемента
+        list_less = []
+        for i in range(row-1): 
+            list_less.append(eq[i][j])
+        # Добавляем мин элемент в матрицу
+        number_min = min(list_less)
+        for i in range(row-1): 
+            if eq[i][j] == number_min: 
+                order_support[i][j] = number_min
 
+    order = []
     # Добавляем в очередь элементы с одним заполнением
     for i in range(row-1):
         for j in range(col-1):
@@ -198,7 +216,6 @@ def get_order(plan):
         for j in range(col-1):
             if order_support[i][j] != 0 and order_support[i][j] != -1:
                 order.append([i, j])
-    
     return order
 
 def is_suitable(order_support, i, j):
