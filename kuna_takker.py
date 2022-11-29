@@ -3,7 +3,7 @@ import copy
 import re 
 
 # todo сделать автоматизированное создание
-xy_symbols = ['x1', 'x2', 'y1', 'y2']
+#xy_symbols = ['x1', 'x2', 'y1', 'y2']
 #x1, x2, y1, y2 = symbols(xy_symbols)
 
 def get_conditions():
@@ -15,6 +15,26 @@ def get_conditions():
 def check_function():
     if is_max: return is_max, function
     else: return true, -function
+
+def get_count_symb(function):
+    max_count = 10
+    max_symb_x = []
+    # Составляем список символов на поиск
+    for i in range(max_count):
+        max_symb_x.append(f'x{i+1}')
+    count_symb = 0
+    # Получаем количество символов 
+    for i in range(max_count):
+        if function.find(max_symb_x[i]) != -1:
+            count_symb += 1
+    return count_symb
+
+def get_headers(symbols, count_symb):
+    headers = []
+    for i in range(len(symbols)):
+        for j in range(count_symb):
+            headers.append(f'{symbols[i]}{j+1}')
+    return get_headers
 
 def get_lagranje():
     lagranje = function
@@ -36,17 +56,20 @@ def get_lagranje():
 
 def get_derivatives():
     derivatives = []
-    for i in range(len(xy_symbols)):
+    x_symbs = get_symbols('x')
+    y_symbs = get_symbols('y')
+    xy_symbs = x_symbs + y_symbs
+    print('xy_symbs', xy_symbs)
+    for i in range(len(xy_symbs)):
         # Составляем список производных по списку символов
-        derivatives.append(diff(lagranje, xy_symbols[i]))
+        derivatives.append(diff(lagranje, xy_symbs[i]))
     return derivatives
 
 def get_symbols(letter):
-    count = len(xy_symbols)/2
-    symbols = []
-    for i in range(int(count)):
-        symbols.append(letter+str(i+1))
-    return symbols
+    letter_symbs = []
+    for i in range(count_symb):
+        letter_symbs.append(letter+str(i+1))
+    return letter_symbs
 
 def calc_eq():
     pattern = '[-+] \d+$'
@@ -94,14 +117,20 @@ def calc_eq():
             w += 1
     return equation
 
+# Данные для ввода пользователем
 is_max = True
 function = '2*x1+4*x2-x1**2-2*x2**2'
-is_max, function = check_function()
 conditions = get_conditions()
+# Обработка введенных данных
+is_max, function = check_function()
+symbols = ['x', 'y', 'w', 'v', 'z']
+count_symb = get_count_symb(function)
+headers = get_headers(symbols, count_symb)
+# Получение различных значений
 lagranje = get_lagranje()
 derivatives = get_derivatives()
 equation = calc_eq()
-
+# Вывод полученных значений
 print('Функция', function)
 print('Условия', conditions)
 print('Лагранж', lagranje)
