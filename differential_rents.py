@@ -4,10 +4,10 @@ from prettytable import PrettyTable
 
 # Исходные данные задачи
 eq = [
-    [7, 12, 4, 8, 5, 180],
-    [1, 8, 6, 5, 3, 350],
-    [6, 13, 8, 7, 4, 20],
-    [110, 90, 120, 80, 150, 550]
+    [1, 2, 3, 1, 5, 120],
+    [6, 3, 4, 5, 2, 50],
+    [8, 2, 1, 9, 3, 200],
+    [120, 60, 40, 30, 120, 370]
 ]
 
 # Количество строк и столбцов
@@ -16,15 +16,12 @@ col = len(eq[0])
 
 def build_headers():
     # Список[0] с первым пустым элементом
-    headers = [[],[]]
-    headers[0].append('')
-
+    headers = [[''],[]]
     # Формируем содержание заголовков
     for number in range(1, col):
         headers[0].append(f'B{number}')
         if number < row: 
             headers[1].append(f'A{number}')
-    
     # Добавляем столбцы 
     headers[0].append('Запасы')
     headers[0].append('Плюс/Минус')
@@ -65,10 +62,8 @@ def build_table():
             next_eq(line_down, line_right)
             break
     # Необходимо ли продолжать программу
-    if not isWork: 
-        return table, plan
-    else:
-        return table, None
+    if not isWork: return table, plan
+    else: return table, None
 
 def calculate_plan(needs, reserves):
     # Получаем очередность перемещения товара
@@ -164,11 +159,12 @@ def calculate_lines():
     if check_line_right(line_right):
         line_right = ['0'] * row
         return plan, line_down, line_right
-
+    
     # Определяем числа в рамках 
+    min_elements = get_min_elements()
     for i in range(row-1):
         for j in range(col-1): 
-            if plan[i][j] != 0:
+            if min_elements[i][j] != 0:
                 # Если строка положительная 
                 if line_right[i].find('+') != -1:
                     line_down[j] = '-'
@@ -184,12 +180,11 @@ def calculate_lines():
                     # Рассчитываем разность
                     difference = number_min-eq[i][j]
                     line_down[j] = f'{difference}'
-
     return plan, line_down, line_right
 
-def get_order():
-    # Подготавливаем матрицу для определения очередности
-    order_support = [[0]*(col-1) for i in range(row-1)]
+def get_min_elements():
+    # Подготавливаем список с минимальными элементами
+    minimal_elements = [[0]*(col-1) for i in range(row-1)]
     # Заполняем матрицу минимальными элементами
     for j in range(col-1):
         # Составляем список для поиска мин элемента
@@ -200,21 +195,23 @@ def get_order():
         number_min = min(list_less)
         for i in range(row-1): 
             if eq[i][j] == number_min: 
-                order_support[i][j] = number_min
+                minimal_elements[i][j] = number_min
+    return minimal_elements
 
+def get_order():
     order = []
+    min_elements = get_min_elements()
     # Добавляем в очередь элементы с одним заполнением
     for i in range(row-1):
         for j in range(col-1):
-            if order_support[i][j] != 0:
-                if is_suitable(order_support, i, j):
+            if min_elements[i][j] != 0:
+                if is_suitable(min_elements, i, j):
                     order.append([i, j])
-                    order_support[i][j] = -1
-
+                    min_elements[i][j] = -1
     # Добавляем в очередь остальные элементы
     for i in range(row-1):
         for j in range(col-1):
-            if order_support[i][j] != 0 and order_support[i][j] != -1:
+            if min_elements[i][j] != 0 and min_elements[i][j] != -1:
                 order.append([i, j])
     return order
 
