@@ -31,9 +31,8 @@ def get_headers(symbols, count_x, count_y):
     headers = []
     for i in range(len(symbols)):
         # Устанавливаем количество в зависимости от символа
-        if symbols[i] != 'y' and symbols[i] != 'w': 
-            cur_count = count_x+1
-        else: cur_count = count_y+1
+        condition = symbols[i] != 'y' and symbols[i] != 'w'
+        cur_count = count_x+1 if condition else count_y+1
         # Составляем список переменных
         for j in range(1, cur_count):
             headers.append(f'{symbols[i]}{j}')
@@ -71,24 +70,41 @@ def get_derivatives():
 
 def get_symbols(letter):
     # Устанавливаем количество в зависимости от символа
-    if letter != 'y' and letter != 'w': 
-        cur_count = count_x+1
-    else: cur_count = count_y+1
+    condition = letter != 'y' and letter != 'w'
+    cur_count = count_x+1 if condition else count_y+1
     # Формируем список символов
     letter_symbs = []
     for i in range(1, cur_count):
         letter_symbs.append(letter+str(i))
     return letter_symbs
 
-def calc_eq():
+def get_characters(expression):
+    return re.findall(r'(\b\w*[\.]?\w+\b|\*{2}|[<>=]{1,2}|[\(\)\+\*\-\/])', expression)
+
+def parser_coeff(parser_string, symbol):
+    coeff = '0'
+    for i in range(len(parser_string)):
+        if parser_string[i] == symbol:
+            coeff = '1'
+            if i == 0: break
+            elif parser_string[i-1] == '-':
+                coeff = parser_string[i-1] + coeff
+            elif parser_string[i-1] == '*':
+                coeff = parser_string[i-2]
+                if i-2 == 0: break
+                elif parser_string[i-3] == '-':
+                    coeff = parser_string[i-3] + coeff
+    return coeff
+
+def calc_equation():
     pattern = '[-+] \d+$'
     list_matchs, list_values = [], []
 
     # Выделение левой и правой части из производных
     for i in range(len(derivatives)):
-        string = str(derivatives[i])
-        match = re.findall(pattern, string)
-        value = re.sub(pattern, '', string)
+        parser_string = str(derivatives[i])
+        match = re.findall(pattern, parser_string)
+        value = re.sub(pattern, '', parser_string)
         list_matchs.append(match)
         list_values.append(value)
 
@@ -110,11 +126,21 @@ def calc_eq():
 
     equation = []
     for i in range(len(list_eq)):
-        if i < count_x:
+        if i < count_x: 
             equation.append(list_eq[i].replace('>', f'-{v_symbs[i]}+{z_symbs[i]}'))
-        else:
+        else: 
             equation.append(list_eq[i].replace('<', f'+{w_symbs[i-count_x]}'))
     return equation
+
+def build_list_eq():
+    list_eq = []
+    for i in range(len(equation)):
+        temp = []
+        for j in range(len(headers)):
+            characters = get_characters(equation[i])
+            temp.append(parser_coeff(characters, headers[j]))
+        list_eq.append(temp)
+    return list_eq
 
 # Данные для ввода пользователем
 is_max = True
@@ -122,14 +148,15 @@ function = '2*x1+4*x2-x1**2-2*x2**2'
 conditions = get_conditions()
 # Обработка введенных данных
 is_max, function = check_function()
-symbols = ['x', 'y', 'w', 'v', 'z']
+symbols = ['x', 'y', 'v', 'w', 'z']
 count_x = get_count_x(function)
 count_y = get_count_y(conditions)
 headers = get_headers(symbols, count_x, count_y)
 # Получение различных значений
 lagranje = get_lagranje()
 derivatives = get_derivatives()
-equation = calc_eq()
+equation = calc_equation()
+list_eq = build_list_eq()
 # Вывод полученных значений
 print('Функция', function)
 print('Условия', conditions)
@@ -137,6 +164,6 @@ print('Лагранж', lagranje)
 print('Производные', derivatives)
 print('Уравнение', equation)
 print('Заголовки', headers)
+print('Список коэффициентов', list_eq)
 
 # todo Преобразовать equation в список для искуственного базиса
-print('Проверка', sp.diff('2*x1**2 + y1 + 2*y2', 'x1'))
