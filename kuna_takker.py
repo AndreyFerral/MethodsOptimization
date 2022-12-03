@@ -49,8 +49,9 @@ def get_lagranje():
             match = re.findall(pattern, conditions[i])
             value = re.sub('<=', '', conditions[i])
             value = re.sub(match[0], '', value)
+            value = str(sp.simplify(value)*-1)
             # Добавляем в функцию Лагранжа
-            equality = match[0] + '-' + value
+            equality = match[0] + value
             lagranje += f'+y{i+1}*({equality})'
         else:
             print('Ошибка! Знак у условий должен быть <=')
@@ -137,7 +138,5 @@ print('Производные', derivatives)
 print('Уравнение', equation)
 print('Заголовки', headers)
 
-# todo Исправить неправильное построение уравнений
-# todo Проверить разность при MIN, а не MAX
 # todo Преобразовать equation в список для искуственного базиса
-print('Проверка', sp.diff('2*x1 + y1 + 2*y2', 'x1'))
+print('Проверка', sp.diff('2*x1**2 + y1 + 2*y2', 'x1'))
