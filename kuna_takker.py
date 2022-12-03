@@ -1,24 +1,22 @@
 import sympy as sp
-import re 
+import re
 
 def get_conditions():
-    conditions = [
+    return [
         'x1+2*x2<=8',
         '2*x1-x2<=12'
-        ]   
-    return conditions
+    ]
 
 def check_function():
-    if is_max: return is_max, function
-    else: return True, -function
+    original = is_max, function
+    changed = True, sp.simplify(function)*-1
+    return original if is_max else changed
 
 def get_count_x(function):
     cur_count, max_count = 0, 10
-    max_symb = []
     # Составляем список символов на поиск
-    for i in range(1, max_count+1):
-        max_symb.append(f'x{i}')
-    # Получаем количество символов 
+    max_symb = [f'x{i}' for i in range(1, max_count+1)]
+    # Получаем количество символов
     for i in range(max_count):
         if function.find(max_symb[i]) != -1:
             cur_count += 1
@@ -31,11 +29,10 @@ def get_headers(symbols, count_x, count_y):
     headers = []
     for i in range(len(symbols)):
         # Устанавливаем количество в зависимости от символа
-        condition = symbols[i] != 'y' and symbols[i] != 'w'
+        condition = symbols[i] not in ['y', 'w']
         cur_count = count_x+1 if condition else count_y+1
         # Составляем список переменных
-        for j in range(1, cur_count):
-            headers.append(f'{symbols[i]}{j}')
+        headers.extend(f'{symbols[i]}{j}' for j in range(1, cur_count))
     return headers
 
 def get_lagranje():
@@ -59,24 +56,16 @@ def get_lagranje():
 
 def get_derivatives():
     # Составляем список переменных для производных
-    x_symbs = get_symbols('x')
-    y_symbs = get_symbols('y')
-    xy_symbs = x_symbs + y_symbs
+    xy_symbs = get_symbols('x') + get_symbols('y')
     # Составляем список с производными
-    derivatives = []
-    for i in range(len(xy_symbs)):
-        derivatives.append(sp.diff(lagranje, xy_symbs[i]))
-    return derivatives
+    return [sp.diff(lagranje, xy_symbs[i]) for i in range(len(xy_symbs))]
 
 def get_symbols(letter):
     # Устанавливаем количество в зависимости от символа
-    condition = letter != 'y' and letter != 'w'
+    condition = letter not in ['y', 'w']
     cur_count = count_x+1 if condition else count_y+1
     # Формируем список символов
-    letter_symbs = []
-    for i in range(1, cur_count):
-        letter_symbs.append(letter+str(i))
-    return letter_symbs
+    return [letter+str(i) for i in range(1, cur_count)]
 
 def get_characters(expression):
     return re.findall(r'(\b\w*[\.]?\w+\b|\*{2}|[<>=]{1,2}|[\(\)\+\*\-\/])', expression)
@@ -91,7 +80,7 @@ def parser_coeff(parser_string, symbol):
                 coeff = parser_string[i-1] + coeff
             elif parser_string[i-1] == '*':
                 coeff = parser_string[i-2]
-                if i-2 == 0: break
+                if i == 2: break
                 elif parser_string[i-3] == '-':
                     coeff = parser_string[i-3] + coeff
     return coeff
@@ -119,16 +108,16 @@ def calc_equation():
         # Если правая сторона отрицательная, то умножнаем на -1
         if right < 0: list_eq.append(str(left) + else_sign + str(-right))
         else: list_eq.append(str(-left) + if_sign + str(right))
-        
+
     v_symbs = get_symbols('v')
     z_symbs = get_symbols('z')
     w_symbs = get_symbols('w')
 
     equation = []
     for i in range(len(list_eq)):
-        if i < count_x: 
+        if i < count_x:
             equation.append(list_eq[i].replace('>', f'-{v_symbs[i]}+{z_symbs[i]}'))
-        else: 
+        else:
             equation.append(list_eq[i].replace('<', f'+{w_symbs[i-count_x]}'))
     return equation
 
