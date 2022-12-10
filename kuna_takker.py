@@ -71,6 +71,7 @@ def get_characters(expression):
     return re.findall(r'(\b\w*[\.]?\w+\b|\*{2}|[<>=]{1,2}|[\(\)\+\*\-\/])', expression)
 
 def parser_coeff(parser_string, symbol):
+    # Функция для получения значения у коэффициента
     coeff = '0'
     for i in range(len(parser_string)):
         if parser_string[i] == symbol:
@@ -98,6 +99,7 @@ def calc_equation():
         list_values.append(value)
 
     list_eq = []
+    # Соединение левой и правой части в неравенства
     for i in range(len(derivatives)):
         left = sp.simplify(list_values[i])
         right = sp.simplify(list_matchs[i][0])
@@ -113,6 +115,7 @@ def calc_equation():
     z_symbs = get_symbols('z')
     w_symbs = get_symbols('w')
 
+    # Заменяем неравенство на равенство
     equation = []
     for i in range(len(list_eq)):
         if i < count_x:
@@ -122,14 +125,37 @@ def calc_equation():
     return equation
 
 def build_list_eq():
-    list_eq = []
+    list_eq, temp = [], [None]
+    # Формируем первую строку в eq
+    for i in range(len(headers)):
+        if headers[i].find('z') < 0:
+            temp.append(0)
+        else: temp.append('-M')
+    list_eq.append(temp)
+    # Формируем остальные строки в eq
     for i in range(len(equation)):
         temp = []
+        characters = get_characters(equation[i])
+        # Получаем значение после равенства
+        index = [j + 1 for j in range(len(characters)) if characters[j] == '=']
+        temp.append(int(characters[index[0]]))
+        # Получаем коэффициенты
         for j in range(len(headers)):
-            characters = get_characters(equation[i])
-            temp.append(parser_coeff(characters, headers[j]))
+            value = int(parser_coeff(characters, headers[j]))
+            temp.append(value)
         list_eq.append(temp)
+
     return list_eq
+
+def build_eq_condition():
+    eq_condition = []
+    for i in range(1, count_x + 1):
+        temp = [f'x{i}', f'v{i}']
+        eq_condition.append(temp)
+    for i in range(1, count_y + 1):
+        temp = [f'y{i}', f'w{i}']
+        eq_condition.append(temp)
+    return eq_condition
 
 # Данные для ввода пользователем
 is_max = True
@@ -146,6 +172,7 @@ lagranje = get_lagranje()
 derivatives = get_derivatives()
 equation = calc_equation()
 list_eq = build_list_eq()
+eq_condition = build_eq_condition()
 # Вывод полученных значений
 print('Функция', function)
 print('Условия', conditions)
@@ -154,5 +181,4 @@ print('Производные', derivatives)
 print('Уравнение', equation)
 print('Заголовки', headers)
 print('Список коэффициентов', list_eq)
-
-# todo Преобразовать equation в список для искуственного базиса
+print('Условия', eq_condition)
