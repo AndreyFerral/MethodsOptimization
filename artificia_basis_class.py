@@ -55,12 +55,17 @@ class ArtificiaBasis:
 
     # Метод для первоначального построения списка базисов
     def build_bases(self):
-        bases = []
         unit_vectors = self.get_unit_vectors()
+        count_unit_vectors = sum(unit_vectors)
+        bases = [0] * count_unit_vectors
         # Добавляем в список номер единичного вектора
-        for i in range(1, self.col+1):
-            if unit_vectors[i]: 
-                bases.append(i)
+        number_unit_vectors = [i for i in range(1, self.col+1) if unit_vectors[i]]
+        # Выстраиваем позицию базисов
+        for i in range(len(number_unit_vectors)):
+            for j in range(1, self.row+1):
+                if eq[j][number_unit_vectors[i]] == 1:
+                    bases[j-1] = number_unit_vectors[i]
+        # Проверяем количество базисных элементов
         if len(bases) != self.row: 
             print(f'В задаче должно быть {self.row} единичных вектора!')
             exit()
@@ -68,10 +73,8 @@ class ArtificiaBasis:
 
     # Метод для проверки строки на знак
     def sign(self, str_for_check):
-        if str_for_check.find('-') != -1: 
-            return -1
-        else: 
-            return 1
+        if str_for_check.find('-') != -1: return -1
+        else: return 1
 
     # Метод для перемножения строки и числа
     def dot(self, list1, list2, j):
@@ -222,8 +225,10 @@ class ArtificiaBasis:
 
 
 eq = [
-    [None, 2, -3, 6, 1, 0, 0, '-M'], 
-    [24, 2, 1, -2, 1, 0, 0, 0], 
-    [22, 1, 2, 4, 0, 1, 0, 0], 
-    [10, 1, -1, 2, 0, 0, -1, 1]]
+    [None, 0, 0, 0, 0, 0, 0, 0, 0, '-M', '-M'], 
+    [2, 2, 0, 1, 2, -1, 0, 0, 0, 1, 0], 
+    [4, 0, 4, 2, -1, 0, -1, 0, 0, 0, 1], 
+    [8, 1, 2, 0, 0, 0, 0, 1, 0, 0, 0], 
+    [12, 2, -1, 0, 0, 0, 0, 0, 1, 0, 0]
+    ]
 artificia_basis = ArtificiaBasis(eq)
