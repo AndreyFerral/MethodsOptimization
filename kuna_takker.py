@@ -148,12 +148,22 @@ def build_list_eq():
     return list_eq
 
 def build_eq_condition():
-    eq_condition = []
+    # Составляем условия как в методички
+    eq_condition_old = []
     for i in range(1, count_x + 1):
         temp = [f'x{i}', f'v{i}']
-        eq_condition.append(temp)
+        eq_condition_old.append(temp)
     for i in range(1, count_y + 1):
         temp = [f'y{i}', f'w{i}']
+        eq_condition_old.append(temp)
+    # Составляем условия для искуственного базиса
+    eq_condition = []
+    for i in range(len(eq_condition_old)):
+        temp = []
+        for j in range(len(eq_condition_old[i])):
+            for m in range(len(headers)):
+                if headers[m] == eq_condition_old[i][j]:
+                    temp.append(m+1)
         eq_condition.append(temp)
     return eq_condition
 
@@ -174,11 +184,11 @@ equation = calc_equation()
 list_eq = build_list_eq()
 eq_condition = build_eq_condition()
 # Вывод полученных значений
-print('Функция', function)
-print('Условия', conditions)
-print('Лагранж', lagranje)
-print('Производные', derivatives)
-print('Уравнение', equation)
-print('Заголовки', headers)
-print('Список коэффициентов', list_eq)
-print('Условия', eq_condition)
+print('Функция:', function)
+print('Условия:', conditions)
+print('Лагранж:', lagranje)
+print('Производные:', derivatives)
+print('Уравнение:', equation)
+print('Заголовки:', headers)
+print('Входные данные:', list_eq)
+print('Условия P:', eq_condition)

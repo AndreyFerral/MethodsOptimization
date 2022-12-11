@@ -154,7 +154,7 @@ class ArtificiaBasis:
 
         choice_list = []
         for i in range(1, self.row+1):
-            if self.eq[i][index_j] >= 0: 
+            if self.eq[i][index_j] > 0: 
                 choice_list.append(self.eq[i][0]/self.eq[i][index_j])
             else: 
                 choice_list.append(inf)
