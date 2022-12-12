@@ -126,12 +126,11 @@ class ArtificiaBasis:
                 print(self.table, f'\nОпорный план является оптимальным. F = {m1_list[0]}')
                 print(f'X* = {self.get_result()}')
             else:
-                value_symbols = self.get_result()
-                x1 = round(value_symbols[0], 3)
-                x2 = round(value_symbols[1], 3)
-                value = eval(self.function)
+                x1 = round(self.get_result()[0], 3)
+                x2 = round(self.get_result()[1], 3)
+                value = round(eval(self.function), 3)
                 print(self.table, f'\nX* = ({x1}, {x2})')
-                print(f'F = {round(value, 3)}')
+                print(f'F = {value}')
             return False
         # Перестаем считать по строке m2  
         elif res_m2 == True:
@@ -240,4 +239,11 @@ eq = [
 eq_cond = [[1, 5], [2, 6], [3, 7], [4, 8]]
 function = '2*x1+4*x2-x1**2-2*x2**2'
 artificia_basis = ArtificiaBasis(eq, eq_cond, function)
+
+eq = [
+[None, 2, -3, 6, 1, 0, 0, '-M'], 
+[24, 2, 1, -2, 1, 0, 0, 0], 
+[22, 1, 2, 4, 0, 1, 0, 0], 
+[10, 1, -1, 2, 0, 0, -1, 1]]
+artificia_basis = ArtificiaBasis(eq)
 '''

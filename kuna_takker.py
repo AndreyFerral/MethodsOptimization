@@ -4,13 +4,13 @@ import re
 
 def get_conditions():
     return [
-        'x1+2*x2<=2',
-        '2*x1-x2<=1'
+        'x1+2*x2<=8',
+        '2*x1-x2<=12'
     ]
 
 def check_function():
     original = is_max, function
-    changed = True, sp.simplify(function)*-1
+    changed = True, str(sp.simplify(function)*-1)
     return original if is_max else changed
 
 def get_count_x(function):
@@ -119,7 +119,7 @@ def calc_equation():
     # Заменяем неравенство на равенство
     equation = []
     for i in range(len(list_eq)):
-        if i < count_x:
+        if list_eq[i].find('>') != -1:
             equation.append(list_eq[i].replace('>', f'-{v_symbs[i]}+{z_symbs[i]}'))
         else:
             equation.append(list_eq[i].replace('<', f'+{w_symbs[i-count_x]}'))
