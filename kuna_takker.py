@@ -4,8 +4,8 @@ import re
 
 def get_conditions():
     return [
-        'x1+2*x2<=8',
-        '2*x1-x2<=12'
+        'x1+2*x2<=2',
+        '2*x1-x2<=1'
     ]
 
 def check_function():
@@ -45,9 +45,13 @@ def get_lagranje():
             # Удаляем знак <= и число после него
             index_sign = conditions[i].find('<=')
             value = conditions[i][0:index_sign]
-            # Добавляем в функцию Лагранжа
+            # value - уравнение до знака
+            # match - значение после знака
             value = str(sp.simplify(value)*-1)
             match = re.findall(pattern, conditions[i])
+            # Если перед условие стоит знак '-'
+            if conditions[i][0] == '-': match[0] += '+'
+            # Добавляем в функцию Лагранжа
             equality = match[0] + value
             lagranje += f'+y{i+1}*({equality})'
         else:
