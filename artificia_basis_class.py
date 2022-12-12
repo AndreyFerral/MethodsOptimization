@@ -127,10 +127,11 @@ class ArtificiaBasis:
                 print(f'X* = {self.get_result()}')
             else:
                 value_symbols = self.get_result()
-                x1 = value_symbols[0]
-                x2 = value_symbols[1]
+                x1 = round(value_symbols[0], 3)
+                x2 = round(value_symbols[1], 3)
+                value = eval(self.function)
                 print(self.table, f'\nX* = ({x1}, {x2})')
-                print(f'F = {eval(self.function)}')
+                print(f'F = {round(value, 3)}')
             return False
         # Перестаем считать по строке m2  
         elif res_m2 == True:
