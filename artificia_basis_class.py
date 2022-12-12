@@ -3,10 +3,11 @@ from cmath import inf
 from prettytable import PrettyTable
 
 class ArtificiaBasis:
-    def __init__(self, eq, eq_condition = []):
+    def __init__(self, eq, eq_condition = [], function = ''):
         # Задаем значения с помощью параметров
         self.eq = eq 
         self.eq_condition = eq_condition
+        self.function = function
         # Объявляем переменную таблицы
         self.table = PrettyTable()
         self.removed = 0
@@ -63,7 +64,7 @@ class ArtificiaBasis:
         # Выстраиваем позицию базисов
         for i in range(len(number_unit_vectors)):
             for j in range(1, self.row+1):
-                if eq[j][number_unit_vectors[i]] == 1:
+                if self.eq[j][number_unit_vectors[i]] == 1:
                     bases[j-1] = number_unit_vectors[i]
         # Проверяем количество базисных элементов
         if len(bases) != self.row: 
@@ -116,14 +117,20 @@ class ArtificiaBasis:
         # Условия для проверки строк m1 и m2
         res_m1 = all(x >= 0 for x in m1_list) # все значения >= 0
         res_m2 = all(x == 0 for x in m2_list) # все значения == 0
-
         # В любом случае добавляем строку m1
         self.table.add_row([f'{self.row+1}', '', ''] + m1_list)
 
         # Опорный план задачи найден
         if res_m1 and res_m2:
-            print(self.table, f'\nОпорный план является оптимальным. F = {m1_list[0]}')
-            print(f'X* = {self.get_result()}')
+            if (not self.eq_condition or not self.function):
+                print(self.table, f'\nОпорный план является оптимальным. F = {m1_list[0]}')
+                print(f'X* = {self.get_result()}')
+            else:
+                value_symbols = self.get_result()
+                x1 = value_symbols[0]
+                x2 = value_symbols[1]
+                print(self.table, f'\nX* = ({x1}, {x2})')
+                print(f'F = {eval(self.function)}')
             return False
         # Перестаем считать по строке m2  
         elif res_m2 == True:
@@ -150,7 +157,7 @@ class ArtificiaBasis:
             exit(0)
 
         # Находим минимальное значение в m1 или m2
-        index_j = m_list.index(min(list_less))
+        index_j = m_list.index(min(list_less), 1)
 
         choice_list = []
         for i in range(1, self.row+1):
@@ -162,10 +169,8 @@ class ArtificiaBasis:
         index_i = choice_list.index(min(choice_list)) + 1
         main = self.eq[index_i][index_j]
         # Сохраняем измененную главную линию по x и y
-        save_y = []
         save_x = [x / main for x in self.eq[index_i]]
-        for i in range(self.row): 
-            save_y.append(self.eq[i+1][index_j])
+        save_y = [self.eq[i+1][index_j] for i in range(self.row)]
 
         # Расчёт таблицы
         for i in range(1, self.row+1):
@@ -223,7 +228,7 @@ class ArtificiaBasis:
             result[self.bases[i]-1] = self.eq[i+1][0]
         return result
 
-
+'''
 eq = [
     [None, 0, 0, 0, 0, 0, 0, 0, 0, '-M', '-M'], 
     [2, 2, 0, 1, 2, -1, 0, 0, 0, 1, 0], 
@@ -231,4 +236,7 @@ eq = [
     [8, 1, 2, 0, 0, 0, 0, 1, 0, 0, 0], 
     [12, 2, -1, 0, 0, 0, 0, 0, 1, 0, 0]
     ]
-artificia_basis = ArtificiaBasis(eq)
+eq_cond = [[1, 5], [2, 6], [3, 7], [4, 8]]
+function = '2*x1+4*x2-x1**2-2*x2**2'
+artificia_basis = ArtificiaBasis(eq, eq_cond, function)
+'''

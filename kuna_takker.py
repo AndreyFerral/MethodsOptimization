@@ -1,3 +1,4 @@
+from artificia_basis_class import ArtificiaBasis
 import sympy as sp
 import re
 
@@ -171,12 +172,14 @@ def build_eq_condition():
 is_max = True
 function = '2*x1+4*x2-x1**2-2*x2**2'
 conditions = get_conditions()
+
 # Обработка введенных данных
 is_max, function = check_function()
 symbols = ['x', 'y', 'v', 'w', 'z']
 count_x = get_count_x(function)
 count_y = get_count_y(conditions)
 headers = get_headers(symbols, count_x, count_y)
+
 # Получение различных значений
 lagranje = get_lagranje()
 derivatives = get_derivatives()
@@ -192,3 +195,6 @@ print('Уравнение:', equation)
 print('Заголовки:', headers)
 print('Входные данные:', list_eq)
 print('Условия P:', eq_condition)
+
+# Вызываем метод искуственного базиса
+artificia_basis = ArtificiaBasis(list_eq, eq_condition, function)
