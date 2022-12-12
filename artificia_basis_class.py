@@ -67,7 +67,7 @@ class ArtificiaBasis:
                 if self.eq[j][number_unit_vectors[i]] == 1:
                     bases[j-1] = number_unit_vectors[i]
         # Проверяем количество базисных элементов
-        if len(bases) != self.row: 
+        if len(bases) < self.row: 
             print(f'В задаче должно быть {self.row} единичных вектора!')
             exit()
         return bases
@@ -133,7 +133,7 @@ class ArtificiaBasis:
                 print(f'F = {value}')
             return False
         # Перестаем считать по строке m2  
-        elif res_m2 == True:
+        elif res_m2:
             print(self.table, '\nСтрока m2 содержит все нулевые значения')
             self.calc_table(m1_list)
             return True
@@ -151,7 +151,7 @@ class ArtificiaBasis:
             if m_list[i] < 0 and i != 0: 
                 list_less.append(m_list[i])
         # Если в списке нет отрицательных значений
-        if list_less == []:
+        if not list_less:
             if m_list[0] < 0: print('Исходная задача не имеет решения (A0 < 0)')
             elif m_list[0] == 0: print('Опорный план задачи вырожден (A0 = 0)')
             exit(0)
@@ -196,19 +196,15 @@ class ArtificiaBasis:
         self.bases[index_i-1] = index_j
 
     def get_vectors_name(self):
-        vectors_name = []
-        for i in range(1, self.col+1):
-            vectors_name.append(f'P{i}')
-        return vectors_name
+        return [f'P{i}' for i in range(1, self.col+1)]
 
     # Метод для построения таблицы
     def build_table(self):
         self.table.clear()
         # Формируем заголовки для таблицы
         header_first = ['I', 'Базис', 'Сб', 'A0'] + self.get_vectors_name()
-        header_second = ['', '', '', '']
-        for i in range(1, self.col+1):
-            header_second.append(self.eq[0][i])
+        header_second = [self.eq[0][i] for i in range(1, self.col+1)]
+        header_second =  ['', '', '', ''] + header_second
         # Добавляем заголовки в таблицу
         self.table.field_names = header_first
         self.table.add_row(header_second)
@@ -224,7 +220,7 @@ class ArtificiaBasis:
     def get_result(self):
         wo_removed = self.col - self.removed
         result = [0] * wo_removed
-        for i in range(len(self.bases)):
+        for i in range(self.row):
             result[self.bases[i]-1] = self.eq[i+1][0]
         return result
 

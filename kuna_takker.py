@@ -4,8 +4,8 @@ import re
 
 def get_conditions():
     return [
-        'x1+2*x2<=2',
-        '2*x1-x2<=1'
+        'x1+2*x2<=8',
+        '2*x1-x2<=12'
     ]
 
 def check_function():
@@ -99,6 +99,9 @@ def calc_equation():
     for i in range(len(derivatives)):
         parser_string = str(derivatives[i])
         match = re.findall(pattern, parser_string)
+        if not match:
+            characters = get_characters(str(derivatives[i]))
+            match = [f'+ {characters[0]}']
         value = re.sub(pattern, '', parser_string)
         list_matchs.append(match)
         list_values.append(value)
