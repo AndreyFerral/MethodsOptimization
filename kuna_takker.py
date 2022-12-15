@@ -38,21 +38,21 @@ def get_headers(symbols, count_x, count_y):
 
 def get_lagranje():
     lagranje = str(function)
-    pattern = '\d+$'
     # Составляем функцию Лагранжа
     for i in range(len(conditions)):
+        # Если было найдено '<=' в условиях
         if conditions[i].find('<=') != -1:
-            # Удаляем знак <= и число после него
-            index_sign = conditions[i].find('<=')
-            value = conditions[i][0:index_sign]
-            # value - уравнение до знака
-            # match - значение после знака
+            # Получаем индексы начала и конца знака
+            sign_start = conditions[i].find('<=')
+            sign_end = sign_start + 2
+            # value - до знака, match - после знака
+            value = conditions[i][:sign_start]
+            match = conditions[i][sign_end:]
+            # Преобразуем. Если перед условием стоит знак '-'
+            if conditions[i][0] == '-': match += '+'
             value = str(sp.simplify(value)*-1)
-            match = re.findall(pattern, conditions[i])
-            # Если перед условие стоит знак '-'
-            if conditions[i][0] == '-': match[0] += '+'
             # Добавляем в функцию Лагранжа
-            equality = match[0] + value
+            equality = match + value
             lagranje += f'+y{i+1}*({equality})'
         else:
             print('Ошибка! Знак у условий должен быть <=')
@@ -92,33 +92,37 @@ def parser_coeff(parser_string, symbol):
     return coeff
 
 def calc_equation():
-    pattern = '[-+] \d+$'
+    # Выделение левой и правой части из производных
+    # value - выражение, match - число
     list_matchs, list_values = [], []
 
-    # Выделение левой и правой части из производных
     for i in range(len(derivatives)):
-        parser_string = str(derivatives[i])
-        match = re.findall(pattern, parser_string)
-        if not match:
-            characters = get_characters(str(derivatives[i]))
-            match = [f'+ {characters[0]}']
-        value = re.sub(pattern, '', parser_string)
-        list_matchs.append(match)
-        list_values.append(value)
+        characters = get_characters(str(derivatives[i]))
+        # Если число находится в конце полного выражения
+        if characters[-1].isdigit():
+            list_matchs.append(f'{characters[-2]}{characters[-1]}')
+            list_values.append(''.join(characters[:-2]))
+        # Если число находится в начале полного выражения
+        elif characters[0].isdigit() and characters[1] != '*':
+            list_matchs.append(f'{characters[0]}')
+            list_values.append(''.join(characters[1:]))
+        # Если в полном выражении нет числа
+        else: 
+            list_matchs.append('0')
+            list_values.append(''.join(characters))
 
     list_eq = []
-    # Соединение левой и правой части в неравенства
+    # Соединение левой и правой части в неравенство
     for i in range(len(derivatives)):
         left = sp.simplify(list_values[i])
-        right = sp.simplify(list_matchs[i][0])
+        right = sp.simplify(list_matchs[i])
         # Определяем знаки в зависимости от x или y
         greater_equal, less_equal = '>=', '<='
-        if_sign = greater_equal if count_x > i else less_equal
-        else_sign = less_equal if count_x > i else greater_equal
+        cur_sign = greater_equal if count_x > i else less_equal
         # Если правая сторона отрицательная, то умножнаем на -1
-        if right < 0: list_eq.append(str(left) + else_sign + str(-right))
-        else: list_eq.append(str(-left) + if_sign + str(right))
-
+        if right < 0: list_eq.append(str(left) + cur_sign + str(-right))
+        else: list_eq.append(str(-left) + cur_sign + str(right))
+    
     v_symbs = get_symbols('v')
     z_symbs = get_symbols('z')
     w_symbs = get_symbols('w')
@@ -134,12 +138,14 @@ def calc_equation():
 
 def build_list_eq():
     list_eq, temp = [], [None]
+
     # Формируем первую строку в eq
     for i in range(len(headers)):
         if headers[i].find('z') < 0:
             temp.append(0)
         else: temp.append('-M')
     list_eq.append(temp)
+
     # Формируем остальные строки в eq
     for i in range(len(equation)):
         temp = []
