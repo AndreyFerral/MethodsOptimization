@@ -2,26 +2,27 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 def bellman_ford(graph, source):
-    # Step 1: Prepare the distance and predecessor for each node
+    # Шаг 1: Подготовление расстояния и предшественника для каждого узла
     distance, predecessor = dict(), dict()
     full_path = []
     for node in graph:
         distance[node], predecessor[node] = float('inf'), None
     distance[source] = 0
 
-    # Step 2: Relax the edges
+    # Шаг 2: Релаксирование вершин
     for _ in range(len(graph) - 1):
         for node in graph:
             for neighbour in graph[node]:
-                # If the distance between the node and the neighbour is lower than the current, store it
+                # Если расстояние между узлом и соседом меньше текущего - сохраняем
                 if distance[neighbour] > distance[node] + graph[node][neighbour]:
-                    full_path.append([node, neighbour, graph[node][neighbour]])
+                    # graph[node][neighbour]] - вес между node и neighbour
+                    full_path.append([node, neighbour])
                     distance[neighbour], predecessor[neighbour] = distance[node] + graph[node][neighbour], node
 
-    # Step 3: Check for negative weight cycles
+    # Шаг 3: Проверка наличия отрицательных циклов
     for node in graph:
         for neighbour in graph[node]:
-            assert distance[neighbour] <= distance[node] + graph[node][neighbour], "Negative weight cycle."
+            assert distance[neighbour] <= distance[node] + graph[node][neighbour], "Негативный взвешенный цикл"
  
     return distance, predecessor, full_path
 
@@ -32,14 +33,30 @@ def draw_graf():
     nx.draw_networkx_edge_labels(G, pos, edge_labels = edge_weight)
     plt.show()
 
+def change_edge_colors(color):
+    # Красим ребра графа в произвольный цвет
+    for e1, e2 in G.edges(): G[e1][e2]['color'] = color
+
+def display_graf(edges):
+    change_edge_colors('black')
+    # Красим ребро между r1 и r2 в красный цвет
+    for r1, r2 in edges:
+        for e1, e2 in G.edges():
+            if r1 == e1 and r2 == e2 or r1 == e2 and r2 == e1:
+                G[e1][e2]['color'] = 'red'
+                # Отображаем граф, если edges - список
+                if type(edges) is list: draw_graf()
+    # Отображаем граф, если edges - словарь
+    if type(edges) is not list: draw_graf()
+    change_edge_colors('black')
+
 def dict_to_graph(graph):
     edges = []
     for node in graph:
         #print(node, graph[node])
         for neighbour in graph[node]:
-            edge = (node, neighbour, graph[node][neighbour])
-            edges.append(edge)
-            #print(edge)
+            edges.append((node, neighbour, graph[node][neighbour]))
+            #print((node, neighbour, graph[node][neighbour]))
     return edges
 
 graph = {
@@ -57,27 +74,11 @@ print('Полный путь:', fpath)
 
 edges = dict_to_graph(graph)
 print('DiGraph', edges)
-G = nx.DiGraph()
-G.add_weighted_edges_from(edges)
-
-for e1, e2 in G.edges(): G[e1][e2]['color'] = 'black'
+G = nx.DiGraph(edges)
+#G.add_weighted_edges_from(edges)
 pos = nx.circular_layout(G)
 
-for r1, r2, w in fpath:
-    for e1, e2 in G.edges():
-        if r1 == e1 and r2 == e2 or r1 == e2 and r2 == e1:
-            G[e1][e2]['color'] = 'red'
-            draw_graf()
-
-for e1, e2 in G.edges(): 
-    G[e1][e2]['color'] = 'black'
-
-print('Покрасили черным. Отображаем путь')
+display_graf(fpath)
+print('Покрасили черным. Показываем конечный результат')
 draw_graf()
-
-for r1, r2 in path.items():
-    for e1, e2 in G.edges():
-        if r1 == e1 and r2 == e2 or r1 == e2 and r2 == e1:
-            G[e1][e2]['color'] = 'red'
-
-draw_graf()
+display_graf(path.items())
